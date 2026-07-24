@@ -1,0 +1,846 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Baroque — The Iterated Square Enigma</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Instrument+Serif:ital@0;1&display=swap");
+
+      :root {
+        --obsidian: #0a0a0a;
+        --void: #000000;
+        --gold-100: #faf3e0;
+        --gold-300: #d4af37;
+        --gold-500: #b8860b;
+        --gold-700: #8b6914;
+        --gold-900: #5c4308;
+        --crimson: #dc143c;
+        --crimson-deep: #8b0000;
+        --emerald: #50c878;
+        --emerald-dark: #2d5a3f;
+        --marble: #1a1a1a;
+        --marble-light: #2a2a2a;
+        --ivory: #fffff0;
+        --border-gold: linear-gradient(
+          135deg,
+          var(--gold-300),
+          var(--gold-700),
+          var(--gold-300)
+        );
+        --text-glow: 0 0 20px rgba(212, 175, 55, 0.4);
+        --box-shadow-luxury:
+          0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 2px var(--gold-500),
+          0 0 0 6px rgba(0, 0, 0, 0.6), 0 0 0 8px var(--gold-700);
+        --inner-glow: inset 0 0 60px rgba(212, 175, 55, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--void);
+        color: var(--ivory);
+        font-family: "Instrument Serif", "Georgia", serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+        position: relative;
+        cursor: default;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background:
+          radial-gradient(
+            ellipse at 30% 20%,
+            rgba(212, 175, 55, 0.08) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 70% 80%,
+            rgba(220, 20, 60, 0.06) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 50% 50%,
+            rgba(10, 10, 10, 0.9) 0%,
+            var(--void) 100%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+          repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(212, 175, 55, 0.02) 2px,
+            rgba(212, 175, 55, 0.02) 4px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 2px,
+            rgba(212, 175, 55, 0.02) 2px,
+            rgba(212, 175, 55, 0.02) 4px
+          );
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .luxury-container {
+        position: relative;
+        z-index: 2;
+        width: 90vw;
+        max-width: 800px;
+        background: rgba(10, 10, 10, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 2px;
+        padding: 3rem 2.5rem;
+        box-shadow: var(--box-shadow-luxury);
+        border: 2px solid transparent;
+        background-clip: padding-box;
+        position: relative;
+        animation: containerEntry 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @keyframes containerEntry {
+        0% {
+          opacity: 0;
+          transform: translateY(40px) scale(0.95);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .luxury-container::before {
+        content: "";
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: var(--border-gold);
+        border-radius: 2px;
+        z-index: -1;
+        animation: borderShimmer 4s ease-in-out infinite alternate;
+      }
+
+      @keyframes borderShimmer {
+        0% {
+          filter: brightness(0.8) saturate(0.8);
+        }
+        100% {
+          filter: brightness(1.4) saturate(1.4);
+        }
+      }
+
+      .luxury-container::after {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        border: 1px solid rgba(212, 175, 55, 0.2);
+        border-radius: 1px;
+        pointer-events: none;
+        box-shadow: var(--inner-glow);
+      }
+
+      .ornament-top {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        position: relative;
+      }
+
+      .ornament-top .filigree {
+        font-family: "Cinzel Decorative", serif;
+        font-size: 2.5rem;
+        color: var(--gold-300);
+        letter-spacing: 1rem;
+        opacity: 0.7;
+        text-shadow: var(--text-glow);
+        user-select: none;
+        animation: filigreePulse 3s ease-in-out infinite;
+      }
+
+      @keyframes filigreePulse {
+        0%,
+        100% {
+          opacity: 0.5;
+          text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+        50% {
+          opacity: 0.9;
+          text-shadow:
+            0 0 30px rgba(212, 175, 55, 0.7),
+            0 0 60px rgba(212, 175, 55, 0.3);
+        }
+      }
+
+      .title-section {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .main-title {
+        font-family: "Cinzel Decorative", serif;
+        font-weight: 900;
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+        color: var(--gold-100);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        line-height: 1.3;
+        text-shadow:
+          0 0 30px rgba(250, 243, 224, 0.3),
+          0 4px 8px rgba(0, 0, 0, 0.8);
+        margin-bottom: 0.5rem;
+      }
+
+      .subtitle {
+        font-family: "Space Mono", monospace;
+        font-size: 0.75rem;
+        letter-spacing: 0.5em;
+        color: var(--gold-500);
+        text-transform: uppercase;
+        opacity: 0.8;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin: 2rem 0;
+      }
+
+      .divider-line {
+        height: 1px;
+        flex: 1;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--gold-500),
+          transparent
+        );
+      }
+
+      .divider-diamond {
+        color: var(--gold-300);
+        font-size: 0.8rem;
+        text-shadow: var(--text-glow);
+      }
+
+      .input-sanctum {
+        position: relative;
+        margin: 2rem 0;
+      }
+
+      .input-label {
+        font-family: "Space Mono", monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.4em;
+        color: var(--gold-300);
+        text-transform: uppercase;
+        margin-bottom: 0.8rem;
+        display: block;
+        text-align: center;
+      }
+
+      .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: var(--marble);
+        border: 1px solid var(--gold-700);
+        border-radius: 1px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
+      }
+
+      .input-wrapper:focus-within {
+        border-color: var(--gold-300);
+        box-shadow:
+          0 0 25px rgba(212, 175, 55, 0.3),
+          inset 0 2px 10px rgba(0, 0, 0, 0.6);
+      }
+
+      .input-icon {
+        padding: 1rem 1.5rem;
+        font-size: 1.5rem;
+        color: var(--gold-300);
+        background: rgba(0, 0, 0, 0.4);
+        border-right: 1px solid var(--gold-700);
+        user-select: none;
+      }
+
+      #numberInput {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 1.2rem 1.5rem;
+        font-family: "Space Mono", monospace;
+        font-size: 1.3rem;
+        color: var(--ivory);
+        letter-spacing: 0.1em;
+        outline: none;
+        caret-color: var(--gold-300);
+      }
+
+      #numberInput::placeholder {
+        color: rgba(250, 243, 224, 0.25);
+        letter-spacing: 0.2em;
+        font-style: italic;
+      }
+
+      .input-accent {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--gold-300);
+        opacity: 0;
+        transition: opacity 0.4s ease;
+      }
+
+      .input-wrapper:focus-within .input-accent {
+        opacity: 1;
+        animation: accentPulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes accentPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 10px var(--gold-300);
+        }
+        50% {
+          box-shadow:
+            0 0 25px var(--gold-300),
+            0 0 40px var(--gold-500);
+        }
+      }
+
+      .button-collection {
+        display: flex;
+        gap: 1rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .luxury-btn {
+        font-family: "Cinzel Decorative", serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        padding: 1rem 2rem;
+        background: linear-gradient(
+          180deg,
+          var(--marble-light) 0%,
+          var(--obsidian) 100%
+        );
+        border: 1px solid var(--gold-500);
+        color: var(--gold-100);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        border-radius: 1px;
+        flex: 1;
+        min-width: 140px;
+      }
+
+      .luxury-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(212, 175, 55, 0.15),
+          transparent
+        );
+        transition: left 0.7s ease;
+      }
+
+      .luxury-btn:hover::before {
+        left: 100%;
+      }
+
+      .luxury-btn:hover {
+        border-color: var(--gold-300);
+        box-shadow:
+          0 6px 25px rgba(0, 0, 0, 0.7),
+          0 0 20px rgba(212, 175, 55, 0.4);
+        transform: translateY(-2px);
+        color: #ffffff;
+        text-shadow: var(--text-glow);
+      }
+
+      .luxury-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        transition: all 0.1s ease;
+      }
+
+      .luxury-btn.primary {
+        background: linear-gradient(
+          180deg,
+          var(--gold-700) 0%,
+          var(--gold-900) 100%
+        );
+        border-color: var(--gold-300);
+        color: var(--void);
+        font-weight: 900;
+        box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+      }
+
+      .luxury-btn.primary:hover {
+        background: linear-gradient(
+          180deg,
+          var(--gold-500) 0%,
+          var(--gold-700) 100%
+        );
+        box-shadow:
+          0 6px 30px rgba(212, 175, 55, 0.5),
+          0 0 40px rgba(212, 175, 55, 0.2);
+      }
+
+      .result-sanctum {
+        margin-top: 2rem;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .result-sanctum.manifest {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .result-display {
+        background: var(--marble);
+        border: 1px solid var(--gold-700);
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        border-radius: 1px;
+        box-shadow: var(--inner-glow);
+      }
+
+      .result-label {
+        font-family: "Space Mono", monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.5em;
+        color: var(--gold-300);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+      }
+
+      .result-value {
+        font-family: "Cinzel Decorative", serif;
+        font-weight: 900;
+        font-size: clamp(3rem, 8vw, 5rem);
+        background: linear-gradient(
+          180deg,
+          var(--gold-100) 0%,
+          var(--gold-500) 50%,
+          var(--gold-700) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: none;
+        filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.5));
+        animation: resultReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes resultReveal {
+        0% {
+          transform: scale(0.3);
+          opacity: 0;
+          filter: drop-shadow(0 0 50px rgba(212, 175, 55, 1));
+        }
+        60% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+          filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.5));
+        }
+      }
+
+      .result-path {
+        font-family: "Space Mono", monospace;
+        font-size: 0.8rem;
+        color: var(--gold-500);
+        margin-top: 1rem;
+        letter-spacing: 0.1em;
+        word-break: break-all;
+        opacity: 0.7;
+        line-height: 1.6;
+      }
+
+      .result-number-1 {
+        color: var(--emerald);
+      }
+      .result-number-89 {
+        color: var(--crimson);
+      }
+
+      .particle-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 3;
+      }
+
+      .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: var(--gold-300);
+        border-radius: 50%;
+        animation: particleFloat linear infinite;
+        opacity: 0;
+        box-shadow: 0 0 6px var(--gold-300);
+      }
+
+      @keyframes particleFloat {
+        0% {
+          opacity: 0;
+          transform: translateY(100vh) scale(0);
+        }
+        10% {
+          opacity: 0.8;
+        }
+        90% {
+          opacity: 0.2;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-100px) scale(1.5);
+        }
+      }
+
+      .signature {
+        text-align: center;
+        margin-top: 2.5rem;
+        font-family: "Cinzel Decorative", serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.5em;
+        color: var(--gold-700);
+        opacity: 0.6;
+        user-select: none;
+      }
+
+      @media (max-width: 600px) {
+        .luxury-container {
+          padding: 2rem 1.5rem;
+          width: 95vw;
+        }
+        .button-collection {
+          flex-direction: column;
+        }
+        .luxury-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="particle-container" id="particleContainer"></div>
+
+    <div class="luxury-container">
+      <div class="ornament-top">
+        <span class="filigree">&#x2766;</span>
+      </div>
+
+      <div class="title-section">
+        <h1 class="main-title">Iterated Square</h1>
+        <p class="subtitle">Digital Alchemy &#x2022; The 1 or 89 Enigma</p>
+      </div>
+
+      <div class="divider">
+        <span class="divider-line"></span>
+        <span class="divider-diamond">&#x25C6;</span>
+        <span class="divider-line"></span>
+      </div>
+
+      <div class="input-sanctum">
+        <label for="numberInput" class="input-label">
+          Enter a Natural Number
+        </label>
+        <div class="input-wrapper">
+          <span class="input-icon">&#x2115;</span>
+          <input
+            type="number"
+            id="numberInput"
+            placeholder="e.g., 15"
+            min="1"
+            step="1"
+            autofocus
+          />
+          <div class="input-accent"></div>
+        </div>
+      </div>
+
+      <div class="button-collection">
+        <button class="luxury-btn" id="computeBtn">
+          &#x2022; Compute &#x2022;
+        </button>
+        <button class="luxury-btn primary" id="randomBtn">
+          &#x2726; Random &#x2726;
+        </button>
+        <button class="luxury-btn" id="clearBtn">&#x21BA; Clear</button>
+      </div>
+
+      <div class="result-sanctum" id="resultSanctum">
+        <div class="result-display">
+          <p class="result-label">The Convergence</p>
+          <div class="result-value" id="resultValue">—</div>
+          <p class="result-path" id="resultPath"></p>
+        </div>
+      </div>
+
+      <div class="signature">&#x2766; Digital Baroque &#x2766;</div>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        // DOM References
+        const numberInput = document.getElementById("numberInput");
+        const computeBtn = document.getElementById("computeBtn");
+        const randomBtn = document.getElementById("randomBtn");
+        const clearBtn = document.getElementById("clearBtn");
+        const resultSanctum = document.getElementById("resultSanctum");
+        const resultValue = document.getElementById("resultValue");
+        const resultPath = document.getElementById("resultPath");
+        const particleContainer = document.getElementById("particleContainer");
+
+        /**
+         * Computes the iterated digit square sum convergence.
+         * Implements the classic "happy number" variant ending in 1 or 89.
+         * @param {number} n - Natural number input (positive integer)
+         * @returns {{ result: number, path: number[] }} Final value (1 or 89) and the path taken
+         */
+        function iteratedSquare(n) {
+          const path = [n];
+          let current = n;
+
+          while (current !== 1 && current !== 89) {
+            let sum = 0;
+            let temp = current;
+            // Digit extraction without string conversion — pure arithmetic
+            while (temp > 0) {
+              const digit = temp % 10;
+              sum += digit * digit;
+              temp = Math.floor(temp / 10);
+            }
+            current = sum;
+            path.push(current);
+          }
+
+          return { result: current, path };
+        }
+
+        /**
+         * Renders the result into the sanctum with a dramatic reveal.
+         * @param {{ result: number, path: number[] }} data
+         */
+        function renderResult(data) {
+          // Remove previous animation class to re-trigger
+          resultValue.style.animation = "none";
+          resultValue.offsetHeight; // Force reflow
+          resultValue.style.animation = "";
+
+          resultValue.textContent = data.result;
+          resultValue.className = "result-value";
+          if (data.result === 1) {
+            resultValue.classList.add("result-number-1");
+          } else {
+            resultValue.classList.add("result-number-89");
+          }
+
+          // Build path display
+          const pathStr = data.path.join(" \u2192 ");
+          resultPath.innerHTML = `<span style="opacity:0.6;">Path:</span> ${pathStr}`;
+
+          // Reveal the sanctum
+          resultSanctum.classList.add("manifest");
+        }
+
+        /**
+         * Validates and processes user input.
+         */
+        function handleCompute() {
+          const rawValue = numberInput.value.trim();
+          if (!rawValue) {
+            shakeElement(numberInput);
+            return;
+          }
+
+          const num = parseInt(rawValue, 10);
+          if (isNaN(num) || num < 1 || !Number.isInteger(num)) {
+            shakeElement(numberInput);
+            return;
+          }
+
+          const data = iteratedSquare(num);
+          renderResult(data);
+          spawnParticles(15);
+        }
+
+        /**
+         * Generates a random natural number and computes.
+         */
+        function handleRandom() {
+          const randomNum = Math.floor(Math.random() * 9999) + 1;
+          numberInput.value = randomNum;
+          const data = iteratedSquare(randomNum);
+          renderResult(data);
+          spawnParticles(25);
+          // Brief shimmer on input
+          numberInput.style.transition = "all 0.3s ease";
+          numberInput.style.backgroundColor = "rgba(212, 175, 55, 0.1)";
+          setTimeout(() => {
+            numberInput.style.backgroundColor = "";
+          }, 300);
+        }
+
+        /**
+         * Clears input and results.
+         */
+        function handleClear() {
+          numberInput.value = "";
+          resultSanctum.classList.remove("manifest");
+          resultValue.textContent = "\u2014";
+          resultValue.className = "result-value";
+          resultPath.innerHTML = "";
+          numberInput.focus();
+        }
+
+        /**
+         * Subtle shake animation for invalid input feedback.
+         * @param {HTMLElement} element
+         */
+        function shakeElement(element) {
+          element.style.transition = "transform 0.1s ease";
+          element.style.transform = "translateX(-5px)";
+          setTimeout(() => {
+            element.style.transform = "translateX(5px)";
+            setTimeout(() => {
+              element.style.transform = "translateX(-3px)";
+              setTimeout(() => {
+                element.style.transform = "translateX(0)";
+              }, 80);
+            }, 80);
+          }, 80);
+          element.focus();
+        }
+
+        /**
+         * Spawns luxury gold particles for visual delight.
+         * @param {number} count
+         */
+        function spawnParticles(count) {
+          for (let i = 0; i < count; i++) {
+            const particle = document.createElement("div");
+            particle.classList.add("particle");
+            particle.style.left = Math.random() * 100 + "%";
+            particle.style.animationDuration = Math.random() * 3 + 3 + "s";
+            particle.style.animationDelay = Math.random() * 0.8 + "s";
+            particle.style.width = Math.random() * 4 + 2 + "px";
+            particle.style.height = particle.style.width;
+            particleContainer.appendChild(particle);
+
+            // Auto-cleanup
+            const totalDuration =
+              parseFloat(particle.style.animationDuration) +
+              parseFloat(particle.style.animationDelay);
+            setTimeout(
+              () => {
+                if (particle.parentNode) {
+                  particle.remove();
+                }
+              },
+              totalDuration * 1000 + 200
+            );
+          }
+        }
+
+        // Ambient particles on load
+        function ambientParticles() {
+          setInterval(() => {
+            if (document.hidden) return;
+            spawnParticles(2);
+          }, 4000);
+        }
+
+        // Event Listeners
+        computeBtn.addEventListener("click", handleCompute);
+        randomBtn.addEventListener("click", handleRandom);
+        clearBtn.addEventListener("click", handleClear);
+        numberInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleCompute();
+          }
+        });
+
+        // Initialize
+        ambientParticles();
+        numberInput.focus();
+
+        // Log metadata for console connoisseurs
+        console.log(
+          "%c\u2726 Digital Baroque \u2014 Iterated Square Enigma \u2726",
+          'font-family: "Cinzel Decorative", serif; font-size: 1.2em; color: #d4af37; text-shadow: 0 0 10px rgba(212,175,55,0.5);'
+        );
+        console.log(
+          "%cConvergence to 1 or 89 \u2022 A mathematical curio since the 20th century",
+          'font-family: "Space Mono", monospace; color: #b8860b;'
+        );
+        console.log(
+          '%cInspired by Arthur C. Clarke\'s observation that "any sufficiently advanced technology is indistinguishable from magic."',
+          "font-style: italic; color: #8b6914;"
+        );
+      })();
+    </script>
+  </body>
+</html>
